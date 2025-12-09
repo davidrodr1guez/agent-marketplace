@@ -1,0 +1,23 @@
+{
+  "name": "agent-marketplace",
+  "version": "1.0.0",
+  "description": "Marketplace de Agentes Autónomos con ERC-8004 y x402",
+  "private": true,
+  "workspaces": [
+    "contracts",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "contracts:compile": "npm run compile -w contracts",
+    "contracts:test": "npm run test -w contracts",
+    "contracts:deploy": "npm run deploy -w contracts",
+    "backend:dev": "npm run dev -w backend",
+    "backend:start": "npm run start -w backend",
+    "frontend:dev": "npm run dev -w frontend",
+    "frontend:build": "npm run build -w frontend"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
