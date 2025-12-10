@@ -1,10 +1,20 @@
 import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import { baseSepolia } from 'wagmi/chains';
 
+// Local Hardhat chain
+const localhost = {
+  id: 31337,
+  name: 'Localhost',
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['http://127.0.0.1:8545'] },
+  },
+};
+
 export const config = getDefaultConfig({
   appName: 'AgentMarket',
   projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo',
-  chains: [baseSepolia],
+  chains: [localhost, baseSepolia],
   ssr: false,
 });
 

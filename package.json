@@ -12,6 +12,8 @@
     "contracts:compile": "npm run compile -w contracts",
     "contracts:test": "npm run test -w contracts",
     "contracts:deploy": "npm run deploy -w contracts",
+    "contracts:deploy:local": "npm run deploy:local -w contracts",
+    "contracts:node": "npm run node -w contracts",
     "backend:dev": "npm run dev -w backend",
     "backend:start": "npm run start -w backend",
     "frontend:dev": "npm run dev -w frontend",

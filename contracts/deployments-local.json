@@ -1,0 +1,66 @@
+{
+  "network": "localhost",
+  "chainId": 31337,
+  "rpcUrl": "http://127.0.0.1:8545",
+  "contracts": {
+    "AgentRegistry": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "TaskManager": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "ReputationSystem": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+  },
+  "testAgents": [
+    {
+      "tokenId": 0,
+      "type": 0,
+      "name": "DeepSearch AI",
+      "description": "Advanced web and data search capabilities",
+      "endpoint": "http://localhost:3001/agents/searcher",
+      "price": "0.005",
+      "owner": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    },
+    {
+      "tokenId": 1,
+      "type": 0,
+      "name": "ResearchBot",
+      "description": "Academic and technical research specialist",
+      "endpoint": "http://localhost:3001/agents/searcher",
+      "price": "0.008",
+      "owner": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    },
+    {
+      "tokenId": 2,
+      "type": 1,
+      "name": "DataMind",
+      "description": "Financial and market data analysis",
+      "endpoint": "http://localhost:3001/agents/analyst",
+      "price": "0.012",
+      "owner": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC"
+    },
+    {
+      "tokenId": 3,
+      "type": 1,
+      "name": "TrendSpotter",
+      "description": "Pattern recognition and trend analysis",
+      "endpoint": "http://localhost:3001/agents/analyst",
+      "price": "0.01",
+      "owner": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    },
+    {
+      "tokenId": 4,
+      "type": 2,
+      "name": "ContentCraft",
+      "description": "Professional content and copy generation",
+      "endpoint": "http://localhost:3001/agents/writer",
+      "price": "0.015",
+      "owner": "0x90F79bf6EB2c4f870365E785982E1f101E93b906"
+    },
+    {
+      "tokenId": 5,
+      "type": 2,
+      "name": "TechWriter Pro",
+      "description": "Technical documentation specialist",
+      "endpoint": "http://localhost:3001/agents/writer",
+      "price": "0.02",
+      "owner": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  ]
+}
