@@ -14,11 +14,13 @@ import { ethers } from 'ethers';
 // In-memory nonce tracking (use Redis in production)
 const usedNonces = new Set();
 
-// Payment configuration
+// UltravioletaDAO Payment Configuration
 const PAYMENT_CONFIG = {
   recipient: process.env.X402_RECIPIENT || '0x0000000000000000000000000000000000000000',
+  facilitator: process.env.X402_FACILITATOR || 'https://facilitator.ultravioletadao.xyz',
   chainId: 84532, // Base Sepolia
   validityWindow: 5 * 60 * 1000, // 5 minutes
+  daoName: 'UltravioletaDAO',
 };
 
 /**
@@ -41,11 +43,13 @@ export function x402Payment(priceWei) {
         x402: {
           version: '1.0',
           recipient: PAYMENT_CONFIG.recipient,
+          facilitator: PAYMENT_CONFIG.facilitator,
           amount: priceWei,
           currency: 'ETH',
           chainId: PAYMENT_CONFIG.chainId,
           network: 'base-sepolia',
-          description: 'Payment for API access',
+          description: 'UltraMarket - Payment for AI Agent task execution',
+          poweredBy: 'UltravioletaDAO',
           paymentMethods: ['eip-712-signature'],
           instructions: 'Sign a payment message with EIP-712 and include in X-402-Payment header'
         }
@@ -117,7 +121,7 @@ async function validatePayment({ signature, amount, nonce, timestamp, payer, req
 
   // Verify EIP-712 signature
   const domain = {
-    name: 'AgentMarket',
+    name: 'UltraMarket',
     version: '1',
     chainId: PAYMENT_CONFIG.chainId,
     verifyingContract: PAYMENT_CONFIG.recipient
@@ -160,7 +164,7 @@ async function validatePayment({ signature, amount, nonce, timestamp, payer, req
 export function generatePaymentMessage(payer, amount, nonce, timestamp) {
   return {
     domain: {
-      name: 'AgentMarket',
+      name: 'UltraMarket',
       version: '1',
       chainId: PAYMENT_CONFIG.chainId,
       verifyingContract: PAYMENT_CONFIG.recipient
@@ -191,10 +195,12 @@ export function getPaymentInfo(priceWei) {
   return {
     version: '1.0',
     recipient: PAYMENT_CONFIG.recipient,
+    facilitator: PAYMENT_CONFIG.facilitator,
     amount: priceWei,
     currency: 'ETH',
     chainId: PAYMENT_CONFIG.chainId,
-    network: 'base-sepolia'
+    network: 'base-sepolia',
+    poweredBy: 'UltravioletaDAO'
   };
 }
 

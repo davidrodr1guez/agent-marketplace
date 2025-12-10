@@ -5,14 +5,15 @@
 @tailwind utilities;
 
 :root {
-  --neon-blue: #00d4ff;
-  --neon-purple: #a855f7;
-  --neon-pink: #ec4899;
+  --ultra-violet: #8B5CF6;
+  --ultra-purple: #A855F7;
+  --ultra-pink: #D946EF;
+  --ultra-glow: #C4B5FD;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 212, 255, 0.3) transparent;
+  scrollbar-color: rgba(139, 92, 246, 0.3) transparent;
 }
 
 *::-webkit-scrollbar {
@@ -24,38 +25,43 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(0, 212, 255, 0.3);
+  background: rgba(139, 92, 246, 0.3);
   border-radius: 3px;
 }
 
 body {
   @apply bg-dark-900 text-white font-sans antialiased;
   background-image:
-    radial-gradient(ellipse at top, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at bottom right, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
+    radial-gradient(ellipse at top, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(217, 70, 239, 0.05) 0%, transparent 50%);
 }
 
-/* Neon glow effects */
-.neon-text {
+/* Ultravioleta glow effects */
+.ultra-text {
   text-shadow:
-    0 0 5px currentColor,
-    0 0 10px currentColor,
-    0 0 20px currentColor;
+    0 0 5px var(--ultra-violet),
+    0 0 10px var(--ultra-purple),
+    0 0 20px var(--ultra-pink);
 }
 
-.neon-border {
+.ultra-border {
   box-shadow:
-    0 0 5px currentColor,
-    inset 0 0 5px currentColor;
+    0 0 5px var(--ultra-violet),
+    inset 0 0 5px var(--ultra-violet);
 }
 
-/* Glass morphism */
+/* Glass morphism - purple tint */
 .glass {
-  @apply bg-dark-800/50 backdrop-blur-xl border border-white/10;
+  @apply bg-dark-800/50 backdrop-blur-xl border;
+  border-color: rgba(139, 92, 246, 0.1);
 }
 
 .glass-hover {
-  @apply hover:bg-dark-700/50 hover:border-white/20 transition-all duration-300;
+  @apply hover:bg-dark-700/50 transition-all duration-300;
+}
+
+.glass-hover:hover {
+  border-color: rgba(139, 92, 246, 0.2);
 }
 
 /* Gradient borders */
@@ -69,7 +75,7 @@ body {
   inset: 0;
   padding: 1px;
   border-radius: inherit;
-  background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple), var(--neon-pink));
+  background: linear-gradient(135deg, var(--ultra-violet), var(--ultra-purple), var(--ultra-pink));
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -81,23 +87,45 @@ body {
 .agent-analyst { @apply text-agent-analyst; }
 .agent-writer { @apply text-agent-writer; }
 
-.agent-searcher-bg { @apply bg-agent-searcher/10 border-agent-searcher/30; }
-.agent-analyst-bg { @apply bg-agent-analyst/10 border-agent-analyst/30; }
-.agent-writer-bg { @apply bg-agent-writer/10 border-agent-writer/30; }
+.agent-searcher-bg {
+  @apply border;
+  background-color: rgba(129, 140, 248, 0.1);
+  border-color: rgba(129, 140, 248, 0.3);
+}
+.agent-analyst-bg {
+  @apply border;
+  background-color: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.3);
+}
+.agent-writer-bg {
+  @apply border;
+  background-color: rgba(217, 70, 239, 0.1);
+  border-color: rgba(217, 70, 239, 0.3);
+}
 
-/* Button styles */
+/* Button styles - ultravioleta */
 .btn-primary {
   @apply px-6 py-3 rounded-lg font-medium transition-all duration-300;
-  @apply bg-gradient-to-r from-neon-blue to-neon-purple;
-  @apply hover:shadow-lg hover:shadow-neon-blue/25;
   @apply active:scale-95;
+  background: linear-gradient(to right, var(--ultra-violet), var(--ultra-purple), var(--ultra-pink));
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.25);
 }
 
 .btn-secondary {
   @apply px-6 py-3 rounded-lg font-medium transition-all duration-300;
-  @apply bg-dark-700 border border-white/10;
-  @apply hover:border-neon-blue/50 hover:shadow-lg hover:shadow-neon-blue/10;
+  @apply bg-dark-700 border;
   @apply active:scale-95;
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+.btn-secondary:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.1);
 }
 
 /* Card styles */
@@ -107,20 +135,26 @@ body {
 
 .card-interactive {
   @apply card cursor-pointer;
-  @apply hover:border-neon-blue/30 hover:shadow-lg hover:shadow-neon-blue/5;
   @apply transition-all duration-300;
+}
+
+.card-interactive:hover {
+  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 10px 15px -3px rgba(139, 92, 246, 0.05);
 }
 
 /* Input styles */
 .input {
   @apply w-full px-4 py-3 rounded-lg;
-  @apply bg-dark-700/50 border border-white/10;
-  @apply focus:outline-none focus:border-neon-blue/50 focus:ring-1 focus:ring-neon-blue/30;
+  @apply bg-dark-700/50 border;
+  @apply focus:outline-none;
   @apply placeholder-white/30 transition-all duration-300;
+  border-color: rgba(139, 92, 246, 0.1);
 }
 
 .input:focus {
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.15), 0 0 0 1px rgba(139, 92, 246, 0.3);
 }
 
 /* Status indicators */
@@ -132,18 +166,28 @@ body {
 .status-pending { @apply bg-neon-yellow; }
 .status-error { @apply bg-neon-pink; }
 
-/* Scan line animation */
+/* Scan line animation - purple */
 .scan-line {
   @apply absolute inset-0 overflow-hidden pointer-events-none;
 }
 
 .scan-line::after {
   content: '';
-  @apply absolute inset-x-0 h-px bg-gradient-to-r from-transparent via-neon-blue to-transparent;
+  @apply absolute inset-x-0 h-px;
   @apply animate-scan opacity-50;
+  background: linear-gradient(to right, transparent, var(--ultra-violet), transparent);
 }
 
-/* RainbowKit customization */
+/* RainbowKit customization - ultravioleta */
 [data-rk] {
-  --rk-colors-accentColor: #00d4ff !important;
+  --rk-colors-accentColor: #8B5CF6 !important;
+}
+
+/* UltravioletaDAO badge */
+.dao-badge {
+  @apply inline-flex items-center gap-2 px-3 py-1 rounded-full;
+  @apply text-xs font-medium;
+  background-color: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  color: var(--ultra-glow);
 }

@@ -1,7 +1,8 @@
 const hre = require("hardhat");
 
 async function main() {
-  console.log("🚀 Deploying AgentMarket contracts to", hre.network.name);
+  console.log("🟣 Deploying UltraMarket contracts to", hre.network.name);
+  console.log("   Powered by UltravioletaDAO");
   console.log("-------------------------------------------");
 
   const [deployer] = await hre.ethers.getSigners();
@@ -10,41 +11,42 @@ async function main() {
   const balance = await hre.ethers.provider.getBalance(deployer.address);
   console.log("Balance:", hre.ethers.formatEther(balance), "ETH\n");
 
-  // 1. Deploy AgentRegistry
-  console.log("📝 Deploying AgentRegistry...");
-  const AgentRegistry = await hre.ethers.getContractFactory("AgentRegistry");
-  const agentRegistry = await AgentRegistry.deploy();
-  await agentRegistry.waitForDeployment();
-  const agentRegistryAddress = await agentRegistry.getAddress();
-  console.log("✅ AgentRegistry deployed to:", agentRegistryAddress);
+  // 1. Deploy UltraRegistry
+  console.log("📝 Deploying UltraRegistry...");
+  const UltraRegistry = await hre.ethers.getContractFactory("UltraRegistry");
+  const ultraRegistry = await UltraRegistry.deploy();
+  await ultraRegistry.waitForDeployment();
+  const ultraRegistryAddress = await ultraRegistry.getAddress();
+  console.log("✅ UltraRegistry deployed to:", ultraRegistryAddress);
 
-  // 2. Deploy TaskManager
-  console.log("\n📝 Deploying TaskManager...");
-  const TaskManager = await hre.ethers.getContractFactory("TaskManager");
-  const taskManager = await TaskManager.deploy(agentRegistryAddress);
-  await taskManager.waitForDeployment();
-  const taskManagerAddress = await taskManager.getAddress();
-  console.log("✅ TaskManager deployed to:", taskManagerAddress);
+  // 2. Deploy UltraTask
+  console.log("\n📝 Deploying UltraTask...");
+  const UltraTask = await hre.ethers.getContractFactory("UltraTask");
+  const ultraTask = await UltraTask.deploy(ultraRegistryAddress);
+  await ultraTask.waitForDeployment();
+  const ultraTaskAddress = await ultraTask.getAddress();
+  console.log("✅ UltraTask deployed to:", ultraTaskAddress);
 
-  // 3. Deploy ReputationSystem
-  console.log("\n📝 Deploying ReputationSystem...");
-  const ReputationSystem = await hre.ethers.getContractFactory("ReputationSystem");
-  const reputationSystem = await ReputationSystem.deploy(
-    agentRegistryAddress,
-    taskManagerAddress
+  // 3. Deploy UltraReputation
+  console.log("\n📝 Deploying UltraReputation...");
+  const UltraReputation = await hre.ethers.getContractFactory("UltraReputation");
+  const ultraReputation = await UltraReputation.deploy(
+    ultraRegistryAddress,
+    ultraTaskAddress
   );
-  await reputationSystem.waitForDeployment();
-  const reputationSystemAddress = await reputationSystem.getAddress();
-  console.log("✅ ReputationSystem deployed to:", reputationSystemAddress);
+  await ultraReputation.waitForDeployment();
+  const ultraReputationAddress = await ultraReputation.getAddress();
+  console.log("✅ UltraReputation deployed to:", ultraReputationAddress);
 
   // Summary
   console.log("\n-------------------------------------------");
-  console.log("📋 DEPLOYMENT SUMMARY");
+  console.log("🟣 ULTRAMARKET DEPLOYMENT COMPLETE");
+  console.log("   Powered by UltravioletaDAO");
   console.log("-------------------------------------------");
   console.log("Network:", hre.network.name);
-  console.log("AgentRegistry:", agentRegistryAddress);
-  console.log("TaskManager:", taskManagerAddress);
-  console.log("ReputationSystem:", reputationSystemAddress);
+  console.log("UltraRegistry:", ultraRegistryAddress);
+  console.log("UltraTask:", ultraTaskAddress);
+  console.log("UltraReputation:", ultraReputationAddress);
   console.log("-------------------------------------------");
 
   // Save addresses for frontend/backend
@@ -52,9 +54,9 @@ async function main() {
     network: hre.network.name,
     chainId: hre.network.config.chainId,
     contracts: {
-      AgentRegistry: agentRegistryAddress,
-      TaskManager: taskManagerAddress,
-      ReputationSystem: reputationSystemAddress
+      UltraRegistry: ultraRegistryAddress,
+      UltraTask: ultraTaskAddress,
+      UltraReputation: ultraReputationAddress
     },
     deployer: deployer.address,
     timestamp: new Date().toISOString()
@@ -76,22 +78,22 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30s
 
     try {
-      console.log("Verifying AgentRegistry...");
+      console.log("Verifying UltraRegistry...");
       await hre.run("verify:verify", {
-        address: agentRegistryAddress,
+        address: ultraRegistryAddress,
         constructorArguments: []
       });
 
-      console.log("Verifying TaskManager...");
+      console.log("Verifying UltraTask...");
       await hre.run("verify:verify", {
-        address: taskManagerAddress,
-        constructorArguments: [agentRegistryAddress]
+        address: ultraTaskAddress,
+        constructorArguments: [ultraRegistryAddress]
       });
 
-      console.log("Verifying ReputationSystem...");
+      console.log("Verifying UltraReputation...");
       await hre.run("verify:verify", {
-        address: reputationSystemAddress,
-        constructorArguments: [agentRegistryAddress, taskManagerAddress]
+        address: ultraReputationAddress,
+        constructorArguments: [ultraRegistryAddress, ultraTaskAddress]
       });
 
       console.log("✅ All contracts verified on Basescan!");

@@ -2,17 +2,18 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./AgentRegistry.sol";
-import "./TaskManager.sol";
+import "./UltraRegistry.sol";
+import "./UltraTask.sol";
 
 /**
- * @title ReputationSystem
+ * @title UltraReputation
  * @dev On-chain reputation and feedback system for AI agents
+ * Part of UltraMarket - Powered by UltravioletaDAO
  */
-contract ReputationSystem is Ownable {
+contract UltraReputation is Ownable {
 
-    AgentRegistry public agentRegistry;
-    TaskManager public taskManager;
+    UltraRegistry public ultraRegistry;
+    UltraTask public ultraTask;
 
     struct Review {
         uint256 taskId;
@@ -52,9 +53,9 @@ contract ReputationSystem is Ownable {
     event ReputationUpdated(uint256 indexed agentId, uint256 newAverage);
     event DisputeRecorded(uint256 indexed agentId, uint256 indexed taskId);
 
-    constructor(address _agentRegistry, address _taskManager) Ownable(msg.sender) {
-        agentRegistry = AgentRegistry(_agentRegistry);
-        taskManager = TaskManager(_taskManager);
+    constructor(address _ultraRegistry, address _ultraTask) Ownable(msg.sender) {
+        ultraRegistry = UltraRegistry(_ultraRegistry);
+        ultraTask = UltraTask(_ultraTask);
     }
 
     /**
@@ -69,10 +70,10 @@ contract ReputationSystem is Ownable {
         require(rating >= 1 && rating <= 5, "Rating must be 1-5");
 
         // Get task and verify
-        TaskManager.Task memory task = taskManager.getTask(taskId);
+        UltraTask.Task memory task = ultraTask.getTask(taskId);
         require(task.requester == msg.sender, "Not task requester");
         require(
-            task.status == TaskManager.TaskStatus.Completed,
+            task.status == UltraTask.TaskStatus.Completed,
             "Task not completed"
         );
         require(!hasReviewed[taskId][agentId], "Already reviewed");
@@ -112,10 +113,10 @@ contract ReputationSystem is Ownable {
     }
 
     /**
-     * @dev Record a dispute against an agent (called by TaskManager)
+     * @dev Record a dispute against an agent (called by UltraTask)
      */
     function recordDispute(uint256 agentId, uint256 taskId) external {
-        // In production, add access control for TaskManager only
+        // In production, add access control for UltraTask only
         AgentReputation storage reputation = agentReputations[agentId];
         reputation.disputedTasks++;
 
@@ -157,10 +158,10 @@ contract ReputationSystem is Ownable {
      * @dev Get top agents by type (returns agentIds sorted by reputation)
      */
     function getTopAgentsByType(
-        AgentRegistry.AgentType agentType,
+        UltraRegistry.AgentType agentType,
         uint256 limit
     ) external view returns (uint256[] memory) {
-        uint256[] memory allAgents = agentRegistry.getActiveAgentsByType(agentType);
+        uint256[] memory allAgents = ultraRegistry.getActiveAgentsByType(agentType);
 
         if (allAgents.length == 0) {
             return new uint256[](0);

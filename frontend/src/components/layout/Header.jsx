@@ -22,16 +22,16 @@ export function Header() {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
               <div className="relative">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-primary to-violet-accent flex items-center justify-center">
                   <Bot className="w-6 h-6 text-dark-900" />
                 </div>
-                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-neon-blue to-neon-purple blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-violet-primary to-violet-accent blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-neon-blue to-neon-purple bg-clip-text text-transparent">
-                  AgentMarket
+                <h1 className="text-xl font-bold bg-gradient-to-r from-violet-primary via-violet-secondary to-violet-accent bg-clip-text text-transparent">
+                  UltraMarket
                 </h1>
-                <p className="text-xs text-white/40 font-mono">v1.0 • Base Sepolia</p>
+                <p className="text-xs text-violet-glow/60 font-mono">Powered by UltravioletaDAO</p>
               </div>
             </Link>
 
@@ -55,7 +55,7 @@ export function Header() {
                       />
                     )}
                     <span className={`relative flex items-center gap-2 text-sm font-medium ${
-                      isActive ? 'text-neon-blue' : 'text-white/60 hover:text-white'
+                      isActive ? 'text-violet-primary' : 'text-white/60 hover:text-white'
                     }`}>
                       <Icon className="w-4 h-4" />
                       {item.label}
@@ -92,15 +92,15 @@ export function Header() {
                           Connect Wallet
                         </button>
                       ) : chain.unsupported ? (
-                        <button onClick={openChainModal} className="btn-secondary text-sm text-neon-pink">
+                        <button onClick={openChainModal} className="btn-secondary text-sm text-violet-accent">
                           Wrong Network
                         </button>
                       ) : (
                         <button
                           onClick={openAccountModal}
-                          className="flex items-center gap-3 px-4 py-2 rounded-lg bg-dark-700/50 border border-white/10 hover:border-neon-blue/30 transition-all"
+                          className="flex items-center gap-3 px-4 py-2 rounded-lg bg-dark-700/50 border border-white/10 hover:border-violet-primary/30 transition-all"
                         >
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-neon-blue to-neon-purple" />
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-primary to-violet-accent" />
                           <span className="text-sm font-mono">
                             {account.displayName}
                           </span>

@@ -3,16 +3,17 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./AgentRegistry.sol";
+import "./UltraRegistry.sol";
 
 /**
- * @title TaskManager
+ * @title UltraTask
  * @dev Manages task creation, assignment, execution and payments for AI agents
- * Integrates with x402 for automatic payments
+ * Part of UltraMarket - Powered by UltravioletaDAO
+ * Integrates with x402 for automatic payments via UltravioletaDAO facilitator
  */
-contract TaskManager is ReentrancyGuard, Ownable {
+contract UltraTask is ReentrancyGuard, Ownable {
 
-    AgentRegistry public agentRegistry;
+    UltraRegistry public ultraRegistry;
 
     enum TaskStatus { Created, Assigned, InProgress, Completed, Disputed, Cancelled }
 
@@ -20,7 +21,7 @@ contract TaskManager is ReentrancyGuard, Ownable {
         uint256 id;
         address requester;
         string description;
-        AgentRegistry.AgentType requiredAgentType;
+        UltraRegistry.AgentType requiredAgentType;
         uint256[] assignedAgents;    // Can be multiple agents for complex tasks
         uint256 budget;              // Total budget in wei
         uint256 depositedAmount;     // Amount deposited by requester
@@ -48,7 +49,7 @@ contract TaskManager is ReentrancyGuard, Ownable {
     event TaskCreated(
         uint256 indexed taskId,
         address indexed requester,
-        AgentRegistry.AgentType agentType,
+        UltraRegistry.AgentType agentType,
         uint256 budget
     );
     event TaskAssigned(uint256 indexed taskId, uint256[] agentIds);
@@ -58,8 +59,8 @@ contract TaskManager is ReentrancyGuard, Ownable {
     event TaskCancelled(uint256 indexed taskId);
     event PaymentReleased(uint256 indexed taskId, uint256 indexed agentId, uint256 amount);
 
-    constructor(address _agentRegistry) Ownable(msg.sender) {
-        agentRegistry = AgentRegistry(_agentRegistry);
+    constructor(address _ultraRegistry) Ownable(msg.sender) {
+        ultraRegistry = UltraRegistry(_ultraRegistry);
         feeRecipient = msg.sender;
     }
 
@@ -68,7 +69,7 @@ contract TaskManager is ReentrancyGuard, Ownable {
      */
     function createTask(
         string memory description,
-        AgentRegistry.AgentType requiredAgentType
+        UltraRegistry.AgentType requiredAgentType
     ) external payable returns (uint256) {
         require(msg.value > 0, "Must deposit payment");
         require(bytes(description).length > 0, "Description required");
@@ -106,7 +107,7 @@ contract TaskManager is ReentrancyGuard, Ownable {
 
         // Verify all agents exist and are active
         for (uint256 i = 0; i < agentIds.length; i++) {
-            AgentRegistry.Agent memory agent = agentRegistry.getAgent(agentIds[i]);
+            UltraRegistry.Agent memory agent = ultraRegistry.getAgent(agentIds[i]);
             require(agent.isActive, "Agent not active");
         }
 
@@ -158,13 +159,13 @@ contract TaskManager is ReentrancyGuard, Ownable {
         // Pay agents
         for (uint256 i = 0; i < task.assignedAgents.length; i++) {
             uint256 agentId = task.assignedAgents[i];
-            AgentRegistry.Agent memory agent = agentRegistry.getAgent(agentId);
+            UltraRegistry.Agent memory agent = ultraRegistry.getAgent(agentId);
 
             (bool success, ) = agent.paymentAddress.call{value: paymentPerAgent}("");
             require(success, "Agent payment failed");
 
             // Record completion in registry
-            agentRegistry.recordTaskCompletion(agentId, paymentPerAgent);
+            ultraRegistry.recordTaskCompletion(agentId, paymentPerAgent);
 
             emit PaymentReleased(taskId, agentId, paymentPerAgent);
         }

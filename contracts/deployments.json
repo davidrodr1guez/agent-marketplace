@@ -1,0 +1,11 @@
+{
+  "network": "localhost",
+  "chainId": 31337,
+  "contracts": {
+    "UltraRegistry": "0x959922bE3CAee4b8Cd9a407cc3ac1C251C2007B1",
+    "UltraTask": "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
+    "UltraReputation": "0x68B1D87F95878fE05B998F19b66F4baba5De1aed"
+  },
+  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "timestamp": "2025-12-10T02:34:42.613Z"
+}

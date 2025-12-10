@@ -7,8 +7,8 @@ import { AgentTypeSelector } from '../agents/AgentTypeSelector';
 import { CONTRACTS, AGENT_TYPES } from '../../config/wagmi';
 import { useStore } from '../../stores/useStore';
 
-// TaskManager ABI (simplified)
-const TASK_MANAGER_ABI = [
+// UltraTask ABI (simplified)
+const ULTRA_TASK_ABI = [
   {
     name: 'createTask',
     type: 'function',
@@ -37,19 +37,19 @@ export function CreateTaskForm() {
   });
 
   const handleSubmit = async () => {
-    if (!CONTRACTS.TaskManager) {
+    if (!CONTRACTS.UltraTask) {
       addNotification({
         type: 'error',
         title: 'Contract Not Deployed',
-        message: 'TaskManager contract address not configured'
+        message: 'UltraTask contract address not configured'
       });
       return;
     }
 
     try {
       writeContract({
-        address: CONTRACTS.TaskManager,
-        abi: TASK_MANAGER_ABI,
+        address: CONTRACTS.UltraTask,
+        abi: ULTRA_TASK_ABI,
         functionName: 'createTask',
         args: [description, agentType],
         value: parseEther(budget),

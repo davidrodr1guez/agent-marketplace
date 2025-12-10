@@ -12,17 +12,17 @@ const localhost = {
 };
 
 export const config = getDefaultConfig({
-  appName: 'AgentMarket',
+  appName: 'UltraMarket',
   projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo',
   chains: [localhost, baseSepolia],
   ssr: false,
 });
 
-// Contract addresses
+// UltraMarket Contract addresses
 export const CONTRACTS = {
-  AgentRegistry: import.meta.env.VITE_AGENT_REGISTRY_ADDRESS || '',
-  TaskManager: import.meta.env.VITE_TASK_MANAGER_ADDRESS || '',
-  ReputationSystem: import.meta.env.VITE_REPUTATION_SYSTEM_ADDRESS || '',
+  UltraRegistry: import.meta.env.VITE_ULTRA_REGISTRY_ADDRESS || '',
+  UltraTask: import.meta.env.VITE_ULTRA_TASK_ADDRESS || '',
+  UltraReputation: import.meta.env.VITE_ULTRA_REPUTATION_ADDRESS || '',
 };
 
 // API URL

@@ -6,11 +6,12 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
- * @title AgentRegistry
+ * @title UltraRegistry
  * @dev ERC-8004 inspired registry for autonomous AI agents
+ * Part of UltraMarket - Powered by UltravioletaDAO
  * Each agent is an NFT with on-chain metadata including capabilities and pricing
  */
-contract AgentRegistry is ERC721, ERC721URIStorage, Ownable {
+contract UltraRegistry is ERC721, ERC721URIStorage, Ownable {
 
     uint256 private _nextTokenId;
 
@@ -48,7 +49,7 @@ contract AgentRegistry is ERC721, ERC721URIStorage, Ownable {
     event AgentUpdated(uint256 indexed tokenId, bool isActive, uint256 pricePerTask);
     event AgentTaskCompleted(uint256 indexed tokenId, uint256 earnings);
 
-    constructor() ERC721("AgentMarket Agents", "AGENT") Ownable(msg.sender) {}
+    constructor() ERC721("UltraMarket Agents", "ULTRA") Ownable(msg.sender) {}
 
     /**
      * @dev Register a new AI agent as an NFT
