@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Activity, Bot, Zap } from 'lucide-react';
 import { useStore } from '../../stores/useStore';
+import { GaslessBadge } from '../common/GaslessBadge';
 
 const navItems = [
   { path: '/', label: 'Create Task', icon: Zap },
@@ -67,6 +68,11 @@ export function Header() {
 
             {/* Right side */}
             <div className="flex items-center gap-4">
+              {/* Gasless badge */}
+              <div className="hidden lg:block">
+                <GaslessBadge size="sm" />
+              </div>
+
               {/* Connection status */}
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-dark-700/50 border border-white/5">
                 <div className={`status-dot ${wsConnected ? 'status-active' : 'status-error'}`} />

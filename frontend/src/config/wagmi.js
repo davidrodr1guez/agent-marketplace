@@ -14,7 +14,7 @@ const localhost = {
 export const config = getDefaultConfig({
   appName: 'UltraMarket',
   projectId: import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || 'demo',
-  chains: [localhost, baseSepolia],
+  chains: [baseSepolia, localhost], // Base Sepolia as primary
   ssr: false,
 });
 

@@ -48,6 +48,32 @@ app.get('/api/x402/info', (req, res) => {
   });
 });
 
+// Payment quote endpoint for frontend
+app.post('/api/payment/quote', (req, res) => {
+  const { ethAmount } = req.body;
+  if (!ethAmount) {
+    return res.status(400).json({ error: 'ethAmount is required' });
+  }
+
+  // Calculate USDC equivalent (using approximate ETH price)
+  const ethValue = parseFloat(ethAmount);
+  const ethPrice = 2500; // Approximate ETH price in USD
+  const usdcAmount = ethValue * ethPrice;
+  const fee = usdcAmount * 0.025; // 2.5% facilitator fee
+  const total = usdcAmount + fee;
+
+  res.json({
+    ethAmount,
+    usdcAmount: usdcAmount.toFixed(2),
+    usdcRaw: Math.ceil(usdcAmount * 1e6),
+    fee: fee.toFixed(2),
+    total: total.toFixed(2),
+    totalRaw: Math.ceil(total * 1e6),
+    ethPrice,
+    poweredBy: 'UltravioletaDAO'
+  });
+});
+
 // Routes
 app.use('/api/agents', agentsRouter);
 app.use('/api/tasks', tasksRouter);

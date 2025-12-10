@@ -1,40 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther } from 'viem';
-import { Loader2, Zap, ArrowRight, Sparkles } from 'lucide-react';
+import { useAccount } from 'wagmi';
+import { Loader2, Zap, ArrowRight, Sparkles, PenTool } from 'lucide-react';
 import { AgentTypeSelector } from '../agents/AgentTypeSelector';
-import { CONTRACTS, AGENT_TYPES } from '../../config/wagmi';
+import { CONTRACTS, AGENT_TYPES, API_URL } from '../../config/wagmi';
 import { useStore } from '../../stores/useStore';
+import { useGaslessPayment } from '../../hooks/useGaslessPayment';
+import { GaslessBadge } from '../common/GaslessBadge';
 
-// UltraTask ABI (simplified)
-const ULTRA_TASK_ABI = [
-  {
-    name: 'createTask',
-    type: 'function',
-    stateMutability: 'payable',
-    inputs: [
-      { name: 'description', type: 'string' },
-      { name: 'requiredAgentType', type: 'uint8' }
-    ],
-    outputs: [{ name: '', type: 'uint256' }]
-  }
-];
+// UltravioletaDAO Testnet Facilitator Address (receives USDC payments)
+const DAO_RECIPIENT = '0x34033041a5944B8F10f8E4D8496Bfb84f1A293A8';
 
 export function CreateTaskForm() {
   const [step, setStep] = useState(1);
   const [agentType, setAgentType] = useState(null);
   const [description, setDescription] = useState('');
-  const [budget, setBudget] = useState('0.01');
+  const [budget, setBudget] = useState('0.00001');
+  const [quote, setQuote] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [txHash, setTxHash] = useState(null);
 
-  const { isConnected } = useAccount();
-  const { addNotification, addActiveTask } = useStore();
+  const { isConnected, address } = useAccount();
+  const { addNotification } = useStore();
+  const { signPayment, getQuote, isLoading, error } = useGaslessPayment();
 
-  const { writeContract, data: hash, isPending } = useWriteContract();
-
-  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
+  // Get USDC quote when budget changes
+  useEffect(() => {
+    if (step === 3 && budget) {
+      getQuote(budget)
+        .then(setQuote)
+        .catch(console.error);
+    }
+  }, [step, budget, getQuote]);
 
   const handleSubmit = async () => {
     if (!CONTRACTS.UltraTask) {
@@ -47,18 +44,58 @@ export function CreateTaskForm() {
     }
 
     try {
-      writeContract({
-        address: CONTRACTS.UltraTask,
-        abi: ULTRA_TASK_ABI,
-        functionName: 'createTask',
-        args: [description, agentType],
-        value: parseEther(budget),
+      // 1. Get fresh quote
+      const freshQuote = await getQuote(budget);
+
+      // 2. Sign the payment authorization (no gas needed!)
+      const signedPayment = await signPayment({
+        recipient: DAO_RECIPIENT,
+        amountUSDC: freshQuote.totalRaw,
+        taskId: `task-${Date.now()}`,
+        agentId: `agent-type-${agentType}`
       });
-    } catch (error) {
+
+      // 3. Send to backend to process
+      const response = await fetch(`${API_URL}/api/tasks/create-gasless`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-402-Payer': address,
+          'X-402-Mode': 'gasless'
+        },
+        body: JSON.stringify({
+          ...signedPayment,
+          task: {
+            description,
+            agentType,
+            budget,
+            budgetUSDC: freshQuote.total
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.reason || errorData.error || 'Failed to create task');
+      }
+
+      const result = await response.json();
+
+      setTxHash(result.transactionHash);
+      setIsSuccess(true);
+
+      addNotification({
+        type: 'success',
+        title: 'Task Created!',
+        message: `Gasless payment processed. No gas fees paid!`
+      });
+
+    } catch (err) {
+      console.error('Gasless payment error:', err);
       addNotification({
         type: 'error',
-        title: 'Transaction Failed',
-        message: error.message
+        title: 'Payment Failed',
+        message: err.message || 'Failed to sign payment'
       });
     }
   };
@@ -80,6 +117,16 @@ export function CreateTaskForm() {
     if (step > 1) setStep(step - 1);
   };
 
+  const resetForm = () => {
+    setStep(1);
+    setAgentType(null);
+    setDescription('');
+    setBudget('0.00001');
+    setQuote(null);
+    setIsSuccess(false);
+    setTxHash(null);
+  };
+
   if (isSuccess) {
     return (
       <motion.div
@@ -91,29 +138,25 @@ export function CreateTaskForm() {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: 'spring' }}
-          className="w-20 h-20 mx-auto mb-6 rounded-full bg-neon-green/20 flex items-center justify-center"
+          className="w-20 h-20 mx-auto mb-6 rounded-full flex items-center justify-center"
+          style={{ background: 'rgba(139, 92, 246, 0.2)' }}
         >
-          <Sparkles className="w-10 h-10 text-neon-green" />
+          <Sparkles className="w-10 h-10 text-violet-400" />
         </motion.div>
         <h2 className="text-2xl font-bold mb-2">Task Created!</h2>
-        <p className="text-white/60 mb-6">Your task is being processed by agents</p>
-        <a
-          href={`https://sepolia.basescan.org/tx/${hash}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-neon-blue hover:underline text-sm font-mono"
-        >
-          View transaction →
-        </a>
-        <button
-          onClick={() => {
-            setStep(1);
-            setAgentType(null);
-            setDescription('');
-            setBudget('0.01');
-          }}
-          className="btn-secondary mt-6 block mx-auto"
-        >
+        <p className="text-white/60 mb-4">Your task is being processed by agents</p>
+        <GaslessBadge size="lg" className="justify-center mb-6" />
+        {txHash && (
+          <a
+            href={`https://sepolia.basescan.org/tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-violet-400 hover:text-violet-300 hover:underline text-sm font-mono block mb-6"
+          >
+            View transaction on BaseScan →
+          </a>
+        )}
+        <button onClick={resetForm} className="btn-secondary">
           Create Another Task
         </button>
       </motion.div>
@@ -129,16 +172,16 @@ export function CreateTaskForm() {
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                 s === step
-                  ? 'bg-neon-blue text-dark-900'
+                  ? 'bg-violet-500 text-white'
                   : s < step
-                  ? 'bg-neon-green/20 text-neon-green'
+                  ? 'bg-violet-500/20 text-violet-400'
                   : 'bg-dark-700 text-white/40'
               }`}
             >
               {s < step ? '✓' : s}
             </div>
             {s < 3 && (
-              <div className={`flex-1 h-0.5 ${s < step ? 'bg-neon-green/30' : 'bg-dark-700'}`} />
+              <div className={`flex-1 h-0.5 ${s < step ? 'bg-violet-500/30' : 'bg-dark-700'}`} />
             )}
           </div>
         ))}
@@ -189,7 +232,7 @@ export function CreateTaskForm() {
           </motion.div>
         )}
 
-        {/* Step 3: Set Budget */}
+        {/* Step 3: Set Budget - GASLESS */}
         {step === 3 && (
           <motion.div
             key="step3"
@@ -197,10 +240,13 @@ export function CreateTaskForm() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
           >
-            <h2 className="text-2xl font-bold mb-2">Set Your Budget</h2>
-            <p className="text-white/50 mb-6">
-              This will be distributed to agents upon task completion
-            </p>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Set Your Budget</h2>
+                <p className="text-white/50">Pay with USDC - No gas fees!</p>
+              </div>
+              <GaslessBadge size="md" />
+            </div>
 
             <div className="relative mb-6">
               <input
@@ -218,13 +264,13 @@ export function CreateTaskForm() {
 
             {/* Quick select */}
             <div className="flex gap-2 justify-center mb-8">
-              {['0.005', '0.01', '0.05', '0.1'].map((amount) => (
+              {['0.00001', '0.00002', '0.00005', '0.0001'].map((amount) => (
                 <button
                   key={amount}
                   onClick={() => setBudget(amount)}
                   className={`px-4 py-2 rounded-lg text-sm font-mono transition-all ${
                     budget === amount
-                      ? 'bg-neon-blue/20 text-neon-blue border border-neon-blue/30'
+                      ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
                       : 'bg-dark-700 text-white/60 hover:text-white border border-transparent'
                   }`}
                 >
@@ -233,7 +279,7 @@ export function CreateTaskForm() {
               ))}
             </div>
 
-            {/* Summary */}
+            {/* Summary with USDC conversion */}
             <div className="bg-dark-700/50 rounded-xl p-4 border border-white/5">
               <h4 className="text-sm font-medium text-white/60 mb-3">Task Summary</h4>
               <div className="space-y-2 text-sm">
@@ -246,8 +292,41 @@ export function CreateTaskForm() {
                   <span className="text-white truncate max-w-[200px]">{description.slice(0, 30)}...</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t border-white/5">
-                  <span className="text-white/40">Total Cost</span>
-                  <span className="text-neon-blue font-bold">{budget} ETH</span>
+                  <span className="text-white/40">Budget (ETH)</span>
+                  <span className="text-white font-mono">{budget} ETH</span>
+                </div>
+                {quote && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-white/40">Amount (USDC)</span>
+                      <span className="text-white font-mono">${quote.usdcAmount}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/40">Facilitator Fee</span>
+                      <span className="text-white font-mono">${quote.fee}</span>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t border-white/5">
+                      <span className="text-violet-400 font-medium">Total (USDC)</span>
+                      <span className="text-violet-400 font-bold font-mono">${quote.total}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/40">Gas Fee</span>
+                      <span className="text-green-400 font-bold">$0.00</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Gasless info */}
+            <div className="mt-4 p-3 rounded-lg text-sm"
+              style={{ background: 'rgba(139, 92, 246, 0.1)', border: '1px solid rgba(139, 92, 246, 0.2)' }}
+            >
+              <div className="flex items-start gap-2">
+                <Zap className="w-4 h-4 text-violet-400 mt-0.5 flex-shrink-0" />
+                <div className="text-white/70">
+                  <strong className="text-violet-300">Gasless Payment:</strong> You'll only need to sign a message.
+                  The UltravioletaDAO facilitator will execute the transaction and pay the gas fees.
                 </div>
               </div>
             </div>
@@ -277,23 +356,27 @@ export function CreateTaskForm() {
         ) : (
           <button
             onClick={handleSubmit}
-            disabled={!isConnected || !canProceed() || isPending || isConfirming}
+            disabled={!isConnected || !canProceed() || isLoading}
             className="btn-primary disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
           >
-            {isPending || isConfirming ? (
+            {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                {isPending ? 'Confirm in Wallet...' : 'Processing...'}
+                Sign in Wallet...
               </>
             ) : (
               <>
-                <Zap className="w-4 h-4" />
-                Create Task
+                <PenTool className="w-4 h-4" />
+                Sign & Create Task
               </>
             )}
           </button>
         )}
       </div>
+
+      {error && (
+        <p className="text-red-400 text-sm mt-4 text-center">{error}</p>
+      )}
     </div>
   );
 }

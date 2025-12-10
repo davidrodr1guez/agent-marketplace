@@ -1,8 +1,12 @@
 import { Router } from 'express';
 import { contractService, AgentType, TaskStatus } from '../services/ContractService.js';
 import { orchestrator } from '../services/Orchestrator.js';
+import { processGaslessPayment, verifyAuthorization, getPaymentQuote } from '../services/X402Facilitator.js';
 
 const router = Router();
+
+// In-memory task store for gasless tasks (use database in production)
+const gaslessTasks = new Map();
 
 /**
  * GET /tasks - Lista tareas (filtrable por requester)
@@ -175,6 +179,165 @@ router.post('/:id/cancel', async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+/**
+ * POST /tasks/create-gasless - Create task with gasless USDC payment
+ * Powered by UltravioletaDAO ERC-3009 facilitator
+ *
+ * Body: {
+ *   authorization: { domain, types, message },
+ *   signature: string,
+ *   taskId: string,
+ *   agentId: string,
+ *   task: { description, agentType, budget, budgetUSDC }
+ * }
+ */
+router.post('/create-gasless', async (req, res) => {
+  try {
+    const payerAddress = req.headers['x-402-payer'];
+    const paymentMode = req.headers['x-402-mode'];
+
+    if (paymentMode !== 'gasless') {
+      return res.status(400).json({
+        error: 'Invalid payment mode',
+        reason: 'This endpoint only accepts gasless payments'
+      });
+    }
+
+    const { authorization, signature, taskId, agentId, task } = req.body;
+
+    // Validate required fields
+    if (!authorization || !signature || !task) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        reason: 'authorization, signature, and task are required'
+      });
+    }
+
+    if (!task.description || task.agentType === undefined) {
+      return res.status(400).json({
+        error: 'Invalid task data',
+        reason: 'Task must have description and agentType'
+      });
+    }
+
+    // 1. Verify the ERC-3009 authorization signature
+    const isValidSignature = verifyAuthorization(authorization, signature);
+    if (!isValidSignature) {
+      return res.status(402).json({
+        error: 'Payment Invalid',
+        reason: 'Invalid authorization signature'
+      });
+    }
+
+    console.log(`[Gasless] Valid signature from ${payerAddress} for ${task.budgetUSDC} USDC`);
+
+    // 2. Process payment through UltravioletaDAO facilitator
+    let paymentResult;
+    try {
+      // Extract recipient from the authorization message
+      const recipient = authorization.message?.to || authorization.to;
+
+      paymentResult = await processGaslessPayment({
+        authorization,
+        signature,
+        taskId,
+        recipient
+      });
+
+      console.log(`[Gasless] Payment processed:`, paymentResult);
+    } catch (paymentError) {
+      console.error('[Gasless] Facilitator error:', paymentError.message);
+      return res.status(402).json({
+        error: 'Payment Failed',
+        reason: paymentError.message,
+        facilitator: 'https://facilitator.ultravioletadao.xyz',
+        network: 'base-sepolia'
+      });
+    }
+
+    // 3. Create the task (store in memory for demo, or call contract)
+    const newTask = {
+      id: taskId,
+      description: task.description,
+      agentType: task.agentType,
+      budget: task.budget,
+      budgetUSDC: task.budgetUSDC,
+      requester: payerAddress,
+      status: 'created',
+      createdAt: new Date().toISOString(),
+      payment: {
+        mode: 'gasless',
+        currency: 'USDC',
+        amount: task.budgetUSDC,
+        transactionHash: paymentResult.transactionHash,
+        poweredBy: 'UltravioletaDAO'
+      }
+    };
+
+    gaslessTasks.set(taskId, newTask);
+
+    console.log(`[Gasless] Task created:`, newTask);
+
+    // 4. Return success
+    res.status(201).json({
+      success: true,
+      message: 'Task created with gasless payment!',
+      taskId,
+      transactionHash: paymentResult.transactionHash,
+      task: newTask,
+      payment: {
+        mode: 'gasless',
+        amount: task.budgetUSDC,
+        currency: 'USDC',
+        gasFee: '$0.00',
+        poweredBy: 'UltravioletaDAO'
+      }
+    });
+
+  } catch (error) {
+    console.error('[Gasless] Error:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      reason: error.message
+    });
+  }
+});
+
+/**
+ * POST /payment/quote - Get USDC quote for ETH amount
+ */
+router.post('/payment/quote', async (req, res) => {
+  try {
+    const { ethAmount } = req.body;
+
+    if (!ethAmount) {
+      return res.status(400).json({ error: 'ethAmount is required' });
+    }
+
+    const quote = await getPaymentQuote({
+      serviceType: 'agent-task',
+      ethAmount
+    });
+
+    res.json(quote);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /tasks/gasless - List all gasless tasks
+ */
+router.get('/gasless', (req, res) => {
+  const tasks = Array.from(gaslessTasks.values());
+  res.json({
+    success: true,
+    count: tasks.length,
+    tasks,
+    poweredBy: 'UltravioletaDAO'
+  });
 });
 
 export default router;

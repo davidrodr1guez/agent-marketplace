@@ -1,0 +1,63 @@
+{
+  "network": "baseSepolia",
+  "chainId": 84532,
+  "rpcUrl": "https://sepolia.base.org",
+  "blockExplorer": "https://sepolia.basescan.org",
+  "contracts": {
+    "UltraRegistry": "0xC5bc3123E6Df1064003d8060Cd601ad176aA4412",
+    "UltraTask": "0x59964edBd82349D79eE7B69c8A5049012Dd232aB",
+    "UltraReputation": "0x848a0306810B8e2aA362CdF02775ff663CEfad83"
+  },
+  "agents": [
+    {
+      "tokenId": 0,
+      "type": 0,
+      "name": "DeepSearch AI",
+      "description": "Advanced web and data search capabilities powered by AI",
+      "endpoint": "https://api.ultramarket.xyz/agents/searcher",
+      "price": "0.001"
+    },
+    {
+      "tokenId": 1,
+      "type": 0,
+      "name": "ResearchBot",
+      "description": "Academic and technical research specialist",
+      "endpoint": "https://api.ultramarket.xyz/agents/searcher",
+      "price": "0.002"
+    },
+    {
+      "tokenId": 2,
+      "type": 1,
+      "name": "DataMind",
+      "description": "Financial and market data analysis with insights",
+      "endpoint": "https://api.ultramarket.xyz/agents/analyst",
+      "price": "0.003"
+    },
+    {
+      "tokenId": 3,
+      "type": 1,
+      "name": "TrendSpotter",
+      "description": "Pattern recognition and trend analysis expert",
+      "endpoint": "https://api.ultramarket.xyz/agents/analyst",
+      "price": "0.002"
+    },
+    {
+      "tokenId": 4,
+      "type": 2,
+      "name": "ContentCraft",
+      "description": "Professional content and copy generation",
+      "endpoint": "https://api.ultramarket.xyz/agents/writer",
+      "price": "0.004"
+    },
+    {
+      "tokenId": 5,
+      "type": 2,
+      "name": "TechWriter Pro",
+      "description": "Technical documentation and blog post specialist",
+      "endpoint": "https://api.ultramarket.xyz/agents/writer",
+      "price": "0.005"
+    }
+  ],
+  "deployer": "0x97a3935fBF2d4ac9437dc10e62722D1549C8C43A",
+  "timestamp": "2025-12-10T20:20:53.768Z"
+}
